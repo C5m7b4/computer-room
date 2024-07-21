@@ -3,21 +3,31 @@ import {
   SoftShadows,
   Sky,
   Environment,
+  useGLTF,
+  useTexture,
 } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { Perf } from 'r3f-perf';
-import { Suspense, useRef, useEffect } from 'react';
-import { useControls } from 'leva';
+import { Suspense, useRef, useEffect, useState } from 'react';
+import { useControls, Leva } from 'leva';
+import { ComputerRoom } from './ComputerRoom';
 
 const Experience = () => {
+  const [showLeva, setShowLeva] = useState(false);
   const directionalLight = useRef();
+
+  // const { nodes } = useGLTF('computerRoom.glb');
+  // console.log(nodes);
+  // const bakedTexture = useTexture('computerRoomBaked.jpg');
+  // bakedTexture.flipY = true;
+
   const { perfVisible, useEnvironment, useShoftShadows, useSky, showPlane } =
     useControls('_master', {
       perfVisible: true,
       useEnvironment: false,
       useShoftShadows: false,
       useSky: true,
-      showPlane: true,
+      showPlane: false,
     });
 
   const shadowControls = useControls('shadows', {
@@ -66,10 +76,19 @@ const Experience = () => {
 
   useEffect(() => {
     scene.environmentIntensity = envMapIntensity;
+    const queryString = window.location.href;
+    if (queryString.includes('debug')) {
+      setShowLeva(true);
+    } else {
+      setShowLeva(false);
+    }
+    console.log(queryString);
   }, [envMapIntensity]);
 
   return (
     <>
+      <color args={['#312f2f']} attach="background" />
+
       {perfVisible ? <Perf position="bottom-left" /> : null}
       {useEnvironment ? (
         <Environment
@@ -98,13 +117,18 @@ const Experience = () => {
         intensity={directionalLightIntensity}
         castShadow
         shadow-mapSize={[1024, 1024]}
+        shadow-normalBias={0.04}
       />
       {useSky ? <Sky sunPosition={sunPosition} /> : null}
 
-      <mesh castShadow position-x={-1} position-y={-0.4}>
+      {/* <mesh castShadow position-x={-1} position-y={-0.4}>
         <boxGeometry />
         <meshBasicMaterial color="blue" />
-      </mesh>
+      </mesh> */}
+      {/* <mesh geometry={nodes.backWall.geometry}>
+        <meshStandardMaterial map={bakedTexture} />
+      </mesh> */}
+      <ComputerRoom />
 
       {showPlane ? (
         <mesh
